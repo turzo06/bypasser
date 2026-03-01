@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CC Toolkit</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0b;--bg2:#141416;--bg3:#1c1c1f;--bg4:#242428;
+  --border:#2a2a2e;--border2:#3a3a3f;
+  --fg:#e4e4e7;--fg2:#a1a1aa;--fg3:#71717a;
+  --primary:#6366f1;--primary2:#818cf8;--primary-bg:rgba(99,102,241,.12);
+  --green:#22c55e;--green-bg:rgba(34,197,94,.08);--green-border:rgba(34,197,94,.25);
+  --red:#ef4444;--red-bg:rgba(239,68,68,.08);--red-border:rgba(239,68,68,.25);
+  --yellow:#eab308;--yellow-bg:rgba(234,179,8,.08);--yellow-border:rgba(234,179,8,.25);
+  --radius:8px;--font:'Segoe UI',system-ui,-apple-system,sans-serif;--mono:'SF Mono','Cascadia Code','Fira Code',monospace;
+}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);line-height:1.5;min-height:100vh}
+.container{max-width:800px;margin:0 auto;padding:16px}
+h1{font-size:1.5rem;font-weight:700;text-align:center;padding:20px 0 8px;letter-spacing:-.02em}
+.subtitle{text-align:center;color:var(--fg3);font-size:.85rem;margin-bottom:20px}
+.tabs{display:flex;gap:4px;background:var(--bg2);border-radius:var(--radius);padding:4px;margin-bottom:20px}
+.tab{flex:1;padding:8px 12px;border:none;background:none;color:var(--fg3);font-size:.85rem;font-weight:500;cursor:pointer;border-radius:6px;transition:all .2s;font-family:var(--font)}
+.tab:hover{color:var(--fg2);background:var(--bg3)}
+.tab.active{background:var(--bg4);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden}
+.card-header{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-title{font-size:.95rem;font-weight:600}
+.card-body{padding:0 16px 14px}
+.info-box{background:var(--bg3);border-radius:6px;padding:10px 12px;font-size:.8rem;color:var(--fg2);margin-bottom:12px;line-height:1.5}
+code{font-family:var(--mono);font-size:.75rem;background:var(--bg4);padding:2px 5px;border-radius:3px}
+textarea,input[type="text"],input[type="number"]{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--fg);font-size:.85rem;font-family:var(--mono);outline:none;transition:border .2s}
+textarea:focus,input:focus{border-color:var(--primary)}
+textarea{min-height:140px;resize:vertical}
+.input-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.input-group{display:flex;flex-direction:column;gap:4px}
+.input-group label{font-size:.75rem;font-weight:500;color:var(--fg2)}
+.btn-row{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;flex-wrap:wrap}
+.btn{padding:7px 16px;border:none;border-radius:6px;font-size:.82rem;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;font-family:var(--font)}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary2)}
+.btn-secondary{background:var(--bg3);color:var(--fg2);border:1px solid var(--border)}.btn-secondary:hover{background:var(--bg4);color:var(--fg)}
+.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{opacity:.85}
+.btn-ghost{background:none;color:var(--fg3);border:1px solid transparent}.btn-ghost:hover{background:var(--bg3);color:var(--fg2)}
+.btn-sm{padding:4px 10px;font-size:.75rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:.68rem;font-weight:500;border:1px solid var(--border)}
+.badge-green{color:var(--green);background:var(--green-bg);border-color:var(--green-border)}
+.badge-red{color:var(--red);background:var(--red-bg);border-color:var(--red-border)}
+.badge-yellow{color:var(--yellow);background:var(--yellow-bg);border-color:var(--yellow-border)}
+.badge-primary{color:var(--primary2);background:var(--primary-bg);border-color:rgba(99,102,241,.3)}
+.badge-blue{color:#60a5fa;background:rgba(96,165,250,.08);border-color:rgba(96,165,250,.25)}
+.btn-mode{background:var(--bg);color:var(--fg3);border:1px solid var(--border);padding:7px 12px;font-size:.78rem}
+.btn-mode:hover{background:var(--bg3);color:var(--fg2)}
+.btn-mode.active{border-color:var(--primary);background:var(--primary-bg);color:var(--primary2)}
+.result-row.tds{background:rgba(96,165,250,.08)}
+.badge-outline{color:var(--fg2);background:none;border-color:var(--border2)}
+.sep{border:none;border-top:1px solid var(--border);margin:12px 0}
+.result-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;border-radius:6px;padding:10px 12px;margin-bottom:6px}
+.result-row.live{background:var(--green-bg)}.result-row.dead{background:var(--red-bg)}.result-row.unknown{background:var(--yellow-bg)}
+.result-card-num{font-family:var(--mono);font-size:.82rem;word-break:break-all}
+.result-msg{font-size:.72rem;color:var(--fg3);margin-top:2px}
+.result-badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.result-fp{font-size:.65rem;color:var(--fg3);margin-top:4px;opacity:.7}
+.section-title{font-size:1.1rem;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.pattern-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px}
+.pattern-card.top{border-color:rgba(99,102,241,.4)}
+.pattern-text{font-family:var(--mono);font-size:1.1rem;letter-spacing:.12em;margin:4px 0}
+.pattern-text .wild{color:var(--primary2);font-weight:700}
+.pattern-desc{font-size:.72rem;color:var(--fg3)}
+.pattern-label{font-size:.72rem;color:var(--fg2);font-weight:500}
+.gen-row{display:flex;align-items:center;gap:6px;background:var(--bg3);border-radius:6px;padding:6px 10px;margin-bottom:4px;font-family:var(--mono);font-size:.78rem}
+.gen-row .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.gen-row .dot.valid{background:var(--green)}.gen-row .dot.invalid{background:var(--red)}
+.proxy-row{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--bg3);border-radius:6px;padding:8px 12px;margin-bottom:6px}
+.proxy-row.active{border:1px solid rgba(99,102,241,.3);background:var(--primary-bg)}
+.proxy-input-row{display:flex;gap:8px}
+.proxy-input-row input{flex:1}
+.check-result{border-radius:6px;padding:10px 12px;margin:8px 0;font-size:.82rem}
+.check-result.ok{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green)}
+.check-result.fail{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red)}
+.switch-row{display:flex;align-items:center;gap:8px}
+.switch{position:relative;width:36px;height:20px;background:var(--bg4);border-radius:20px;cursor:pointer;transition:background .2s;border:1px solid var(--border)}
+.switch.on{background:var(--primary)}
+.switch .knob{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .2s}
+.switch.on .knob{left:18px}
+.fp-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;background:var(--bg3);border-radius:6px;padding:10px 12px;font-size:.68rem}
+.fp-row{display:flex;justify-content:space-between;padding:1px 0}
+.fp-row .label{color:var(--fg3)}.fp-row .value{color:var(--fg2);font-weight:500;text-align:right;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fp-row .mono{font-family:var(--mono)}
+.fp-section{font-size:.62rem;font-weight:600;color:var(--fg3);text-transform:uppercase;letter-spacing:.08em;padding:4px 0 2px;grid-column:span 2}
+.empty-state{text-align:center;padding:48px 20px;color:var(--fg3)}
+.empty-state h3{font-size:.95rem;font-weight:500;margin-bottom:4px}
+.empty-state p{font-size:.82rem;opacity:.7}
+.hidden{display:none!important}
+.scroll-area{max-height:400px;overflow-y:auto}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;font-size:.82rem;color:var(--fg);z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.4);animation:slideIn .3s ease;max-width:320px}
+.toast.error{border-color:var(--red-border);background:var(--red-bg)}
+.toast .toast-title{font-weight:600;margin-bottom:2px}
+.toast .toast-desc{font-size:.75rem;color:var(--fg2)}
+@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--fg3);border-top-color:var(--primary);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+@media(max-width:640px){.input-row{grid-template-columns:repeat(2,1fr)}.fp-grid{grid-template-columns:1fr}.tabs{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>CC Toolkit</h1>
+  <p class="subtitle">Card Generator · BIN Extrap · Card Checker</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('generator')">Card Generator</button>
+    <button class="tab" onclick="switchTab('extrap')">BIN Extrap</button>
+    <button class="tab" onclick="switchTab('checker')">Card Checker</button>
+  </div>
+
+  <!-- ==================== CARD GENERATOR ==================== -->
+  <div id="tab-generator">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Card Generator</span></div>
+      <div class="card-body">
+        <div class="info-box">Enter a BIN or extrap pattern (use <code>x</code> for wildcard digits). AMEX (34/37) → 15 digits + 4-digit CVV. Visa/MC → 16 digits + 3-digit CVV.</div>
+        <div class="input-group"><label>BIN / Extrap Pattern</label><input type="text" id="gen-bin" placeholder="e.g. 453201xxxxxxxxxx or 379363"></div>
+        <div class="input-row">
+          <div class="input-group"><label>Month</label><input type="text" id="gen-month" placeholder="MM" maxlength="2"></div>
+          <div class="input-group"><label>Year</label><input type="text" id="gen-year" placeholder="YY" maxlength="2"></div>
+          <div class="input-group"><label>CVV</label><input type="text" id="gen-cvv" placeholder="rnd" maxlength="4"></div>
+          <div class="input-group"><label>Count</label><input type="number" id="gen-count" value="10" min="1" max="100"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="resetGenerator()">Reset</button>
+          <button class="btn btn-primary" onclick="generateCards()">Generate</button>
+        </div>
+      </div>
+    </div>
+    <div id="gen-results"></div>
+  </div>
+
+  <!-- ==================== BIN EXTRAP ==================== -->
+  <div id="tab-extrap" class="hidden">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Input Cards</span>
+        <span id="extrap-count-badge"></span>
+      </div>
+      <div class="card-body">
+        <div class="info-box">Paste one card per line. Format <code>number|date|cvv</code> supported — date/CVV auto-removed. All cards must share the same 6-digit BIN.</div>
+        <textarea id="extrap-input" placeholder="Paste card numbers here..."></textarea>
+        <div id="extrap-luhn"></div>
+        <div id="extrap-error"></div>
+        <hr class="sep">
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="resetExtrap()">Reset</button>
+          <button class="btn btn-primary" onclick="runExtrap()">Extrap</button>
+        </div>
+      </div>
+    </div>
+    <div id="extrap-results"></div>
+  </div>
+
+  <!-- ==================== CARD CHECKER ==================== -->
+  <div id="tab-checker" class="hidden">
+    <!-- Proxy Manager -->
+    <div class="card">
+      <div class="card-header">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="card-title">Proxy & Fingerprint</span>
+          <span id="proxy-status-badge" class="badge badge-yellow">No proxy</span>
+        </div>
+        <div class="switch-row">
+          <span style="font-size:.75rem;color:var(--fg3)">Spoof</span>
+          <div class="switch" id="fp-switch" onclick="toggleFingerprint()"><div class="knob"></div></div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="proxy-input-row">
+          <input type="text" id="proxy-input" placeholder="socks5://user:pass@host:10800  http://...:10080  IP:port">
+          <button class="btn btn-secondary" id="btn-check-proxy" onclick="checkProxy()">Check</button>
+        </div>
+        <div id="proxy-check-result"></div>
+        <div id="proxy-list"></div>
+        <div id="fp-preview" class="hidden"></div>
+      </div>
+    </div>
+
+    <!-- Card Checker -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Card Checker</span>
+        <span id="mode-badge" class="badge badge-outline" style="display:none"></span>
+      </div>
+      <div class="card-body">
+        <div class="info-box">Paste cards one per line: <code>number|month|year|cvv</code>. Proxy required.</div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:.72rem;font-weight:500;color:var(--fg2);display:block;margin-bottom:6px">Check Mode</label>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+            <button class="btn btn-mode active" id="mode-chkr" onclick="setCheckMode('chkr')" style="justify-content:center">Chkr.cc</button>
+            <button class="btn btn-mode" id="mode-stripe-auth" onclick="setCheckMode('stripe-auth')" style="justify-content:center">Stripe Auth</button>
+            <button class="btn btn-mode" id="mode-stripe-checkout" onclick="setCheckMode('stripe-checkout')" style="justify-content:center">Stripe Checkout</button>
+          </div>
+        </div>
+        <div id="mode-info-auth" class="hidden" style="background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.2);border-radius:6px;padding:8px 12px;font-size:.75rem;color:var(--primary2);margin-bottom:10px">
+          WooCommerce Setup Intent flow. Registers account → creates payment method → confirms setup intent. Returns: Approved / 3DS / Declined.
+        </div>
+        <div id="mode-info-checkout" class="hidden">
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px">
+            <div style="font-size:.82rem;font-weight:600;margin-bottom:10px">Stripe Checkout Configuration</div>
+            <label style="font-size:.72rem;font-weight:500;color:var(--fg2);display:block;margin-bottom:4px">Checkout URL</label>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <input type="text" id="checkout-url" placeholder="https://checkout.stripe.com/c/pay/cs_live_..." style="font-size:.78rem;flex:1">
+              <button class="btn" id="btn-grab" onclick="grabCheckout()" style="background:#9333ea;color:#fff;flex-shrink:0">Grab</button>
+            </div>
+            <div id="grab-result"></div>
+            <div id="grab-fields" class="hidden">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+                <div>
+                  <label style="font-size:.65rem;font-weight:500;color:var(--fg3);display:block;margin-bottom:2px">CS Live</label>
+                  <input type="text" id="grabbed-cs" readonly style="font-size:.72rem;background:var(--bg);cursor:default">
+                </div>
+                <div>
+                  <label style="font-size:.65rem;font-weight:500;color:var(--fg3);display:block;margin-bottom:2px">PK Live</label>
+                  <input type="text" id="grabbed-pk" readonly style="font-size:.72rem;background:var(--bg);cursor:default">
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div>
+                  <label style="font-size:.65rem;font-weight:500;color:var(--fg3);display:block;margin-bottom:2px">Amount</label>
+                  <input type="text" id="grabbed-amount" readonly style="font-size:.72rem;background:var(--bg);cursor:default">
+                </div>
+                <div>
+                  <label style="font-size:.65rem;font-weight:500;color:var(--fg3);display:block;margin-bottom:2px">Email</label>
+                  <input type="text" id="grabbed-email" readonly style="font-size:.72rem;background:var(--bg);cursor:default">
+                </div>
+              </div>
+            </div>
+            <div id="grab-empty" style="text-align:center;font-size:.72rem;color:var(--fg3);padding:4px 0">Enter a checkout URL and click Grab to extract session details</div>
+          </div>
+        </div>
+        <textarea id="checker-input" placeholder="5425233430109903|02|2028|362&#10;4532015112830366|01|29|123"></textarea>
+        <div id="checker-progress" class="hidden" style="font-size:.82rem;color:var(--fg3);margin-top:8px"></div>
+        <hr class="sep">
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="resetChecker()">Reset</button>
+          <button class="btn btn-danger hidden" id="btn-stop" onclick="stopChecker()">Stop</button>
+          <button class="btn btn-primary" id="btn-check" onclick="startChecker()">Check Cards</button>
+        </div>
+      </div>
+    </div>
+    <div id="checker-results"></div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+const API = location.origin;
+
+// ===== UTILITIES =====
+function luhnCheck(num) {
+  const d = num.replace(/\D/g, '');
+  if (!d.length) return false;
+  let s = 0, alt = false;
+  for (let i = d.length - 1; i >= 0; i--) {
+    let n = parseInt(d[i], 10);
+    if (alt) { n *= 2; if (n > 9) n -= 9; }
+    s += n; alt = !alt;
+  }
+  return s % 10 === 0;
+}
+
+function calcLuhnCheck(partial) {
+  const d = partial.replace(/\D/g, '');
+  let s = 0, alt = true;
+  for (let i = d.length - 1; i >= 0; i--) {
+    let n = parseInt(d[i], 10);
+    if (alt) { n *= 2; if (n > 9) n -= 9; }
+    s += n; alt = !alt;
+  }
+  return (10 - (s % 10)) % 10;
+}
+
+function detectCardLen(bin) {
+  if (bin.startsWith('34') || bin.startsWith('37')) return 15;
+  if (['300','301','302','303','304','305'].some(p => bin.startsWith(p)) || bin.startsWith('36') || bin.startsWith('38')) return 14;
+  return 16;
+}
+
+function isAmex(bin) { return bin.startsWith('34') || bin.startsWith('37'); }
+
+function showToast(title, desc, isError) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (isError ? ' error' : '');
+  t.innerHTML = `<div class="toast-title">${esc(title)}</div>${desc ? `<div class="toast-desc">${esc(desc)}</div>` : ''}`;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => showToast('Copied')).catch(() => showToast('Copy failed', '', true));
+}
+
+// ===== TABS =====
+function switchTab(name) {
+  document.querySelectorAll('.tabs .tab').forEach((t, i) => {
+    const tabs = ['generator', 'extrap', 'checker'];
+    t.classList.toggle('active', tabs[i] === name);
+  });
+  ['generator', 'extrap', 'checker'].forEach(id => {
+    document.getElementById('tab-' + id).classList.toggle('hidden', id !== name);
+  });
+}
+
+// ===== CARD GENERATOR =====
+function generateCards() {
+  const binRaw = document.getElementById('gen-bin').value.replace(/[^0-9xX]/g, '');
+  if (binRaw.length < 6) { showToast('Invalid', 'Enter at least 6 digits', true); return; }
+  const month = document.getElementById('gen-month').value.replace(/\D/g, '').substring(0, 2);
+  const year = document.getElementById('gen-year').value.replace(/\D/g, '').substring(0, 2);
+  const cvv = document.getElementById('gen-cvv').value.replace(/\D/g, '').substring(0, 4);
+  const count = Math.max(1, Math.min(100, parseInt(document.getElementById('gen-count').value) || 10));
+
+  const concrete = binRaw.replace(/[xX].*$/, '');
+  const cardLen = concrete.length >= 2 ? detectCardLen(concrete) : 16;
+  const cards = [];
+  const seen = new Set();
+
+  for (let attempt = 0; attempt < count * 30 && cards.length < count; attempt++) {
+    let card = '';
+    for (let i = 0; i < Math.min(binRaw.length, cardLen); i++)
+      card += binRaw[i].toLowerCase() === 'x' ? Math.floor(Math.random() * 10) : binRaw[i];
+    while (card.length < cardLen) card += Math.floor(Math.random() * 10);
+    card = card.substring(0, cardLen);
+    const partial = card.substring(0, cardLen - 1);
+    card = partial + calcLuhnCheck(partial);
+
+    if (!seen.has(card)) {
+      seen.add(card);
+      const amex = isAmex(card);
+      let mm = month || String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+      let yy = year || String(new Date().getFullYear() + Math.floor(Math.random() * 5) + 1).slice(-2);
+      let cv = cvv || (amex ? String(Math.floor(Math.random() * 9000) + 1000) : String(Math.floor(Math.random() * 900) + 100));
+      cards.push({ number: card, line: `${card}|${mm}|${yy}|${cv}`, valid: luhnCheck(card) });
+    }
+  }
+
+  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+    <div style="display:flex;align-items:center;gap:8px"><span class="section-title">Generated Cards</span>
+    <span class="badge badge-outline">${cards.length} cards</span>
+    <span class="badge badge-outline">${cards.filter(c=>c.valid).length}/${cards.length} Luhn valid</span></div>
+    <button class="btn btn-secondary btn-sm" onclick="copyText('${cards.map(c=>c.line).join('\\n')}')">Copy All</button></div>`;
+  html += '<div class="scroll-area">';
+  cards.forEach(c => {
+    html += `<div class="gen-row"><span class="dot ${c.valid ? 'valid' : 'invalid'}"></span><span style="flex:1">${esc(c.line)}</span><button class="btn btn-ghost btn-sm" onclick="copyText('${esc(c.line)}')">Copy</button></div>`;
+  });
+  html += '</div>';
+  document.getElementById('gen-results').innerHTML = html;
+  showToast('Generated', `${cards.length} Luhn-valid cards created`);
+}
+
+function resetGenerator() {
+  document.getElementById('gen-bin').value = '';
+  document.getElementById('gen-month').value = '';
+  document.getElementById('gen-year').value = '';
+  document.getElementById('gen-cvv').value = '';
+  document.getElementById('gen-results').innerHTML = '';
+}
+
+// ===== BIN EXTRAP =====
+function parseExtrapCards(raw) {
+  return raw.split(/[\n\r]+/).map(l => l.trim()).filter(l => l.length > 0)
+    .map(l => { const p = l.split(/[|,\s\t]+/); const n = (p[0] || '').replace(/\D/g, ''); return n.length >= 6 ? n.substring(0, 16) : null; })
+    .filter(Boolean);
+}
+
+function countFixed(p) { return p.split('').filter(c => c !== 'x').length; }
+
+function runExtrap() {
+  const raw = document.getElementById('extrap-input').value;
+  const cards = parseExtrapCards(raw);
+  if (cards.length === 0) { showToast('Error', 'No valid card numbers found', true); return; }
+  const bin = cards[0].substring(0, 6);
+  for (let i = 1; i < cards.length; i++) {
+    if (cards[i].substring(0, 6) !== bin) { showToast('BIN Mismatch', `Card 1 BIN ${bin} != Card ${i+1} BIN ${cards[i].substring(0,6)}`, true); return; }
+  }
+
+  const padded = cards.map(c => c.padEnd(16, '0').substring(0, 16));
+  const patterns = []; const seen = new Set();
+  function add(p, label, desc, pri) { if (!seen.has(p) && p !== bin + 'xxxxxxxxxx') { seen.add(p); patterns.push({ pattern: p, label, desc, pri }); } }
+
+  if (cards.length === 1) {
+    const c = padded[0];
+    add(c.substring(0,12)+'xxxx', 'Last 4 Masked', 'Full number with last 4 replaced', 1);
+    let seA = '', seB = '';
+    for (let i = 0; i < 16; i++) {
+      if (i < 6) { seA += c[i]; seB += c[i]; }
+      else if (i < 12 && i%2===0) { seA += c[i]; seB += 'x'; }
+      else if (i < 12) { seA += 'x'; seB += c[i]; }
+      else { seA += 'x'; seB += 'x'; }
+    }
+    add(seA, 'SoFIA Pattern A', 'Even-position digits kept', 3);
+    add(seB, 'SoFIA Pattern B', 'Odd-position digits kept', 4);
+    add(bin+'xxxxxxxxxx', 'Base BIN', '6-digit BIN fallback', 10);
+  }
+
+  if (cards.length >= 2) {
+    let fm = '';
+    for (let i = 0; i < 16; i++) fm += padded.every(c => c[i] === padded[0][i]) ? padded[0][i] : 'x';
+    const be = fm.substring(0,12)+'xxxx';
+    if (countFixed(be) > 6) add(be, 'Best Extrap', `${countFixed(be)} matching digits — top priority`, 1);
+
+    const pairs = [];
+    for (let a = 0; a < padded.length; a++) for (let b = a+1; b < padded.length; b++) {
+      let pm = '';
+      for (let i = 0; i < 12; i++) pm += padded[a][i] === padded[b][i] ? padded[a][i] : 'x';
+      pm += 'xxxx';
+      const pf = countFixed(pm);
+      if (pf > 6 && !seen.has(pm)) pairs.push({ p: pm, f: pf, l: `Pair (${a+1} vs ${b+1})` });
+    }
+    pairs.sort((a,b) => b.f - a.f);
+    pairs.slice(0,3).forEach(pr => add(pr.p, pr.l, `${pr.f} matching digits`, 2));
+
+    for (let a = 0; a < Math.min(padded.length,2); a++) for (let b = a+1; b < Math.min(padded.length,3); b++) {
+      let sf = bin;
+      for (let i = 6; i < 12; i++) sf += padded[a][i] === padded[b][i] ? padded[a][i] : (i%2===0 ? padded[a][i] : 'x');
+      sf += 'xxxx';
+      add(sf, `SoFIA (${a+1}+${b+1})`, 'SoFIA substitution', 3);
+    }
+
+    const cA = padded[0], cB = padded[1];
+    const kA = bin + cA[6], kB = bin + cB[6];
+    const pA = [], pB = [];
+    for (let i = 7; i < 11; i += 2) { pA.push((parseInt(cA[i])||0)+(parseInt(cA[i+1])||0)); pB.push((parseInt(cB[i])||0)+(parseInt(cB[i+1])||0)); }
+    if (pA.length >= 2 && pB.length >= 2) {
+      const sA = pA.reduce((s,v)=>s+v,0), sB = pB.reduce((s,v)=>s+v,0);
+      const fv = String(Math.floor(sA/2*5)+Math.floor(sB/2*5)).substring(0,2).padStart(2,'0');
+      add((kA+fv+'xxxxxxx').substring(0,16), 'Math Extrap A', `Computed: ${fv}`, 4);
+      const mB = (kB+fv+'xxxxxxx').substring(0,16);
+      if ((kA+fv+'xxxxxxx').substring(0,16) !== mB) add(mB, 'Math Extrap B', `Computed: ${fv}`, 5);
+    }
+    add(bin+'xxxxxxxxxx', 'Base BIN', 'Fallback', 10);
+  }
+
+  patterns.sort((a,b) => a.pri - b.pri);
+  renderExtrapResults(cards, bin, patterns);
+  showToast('Extrap Complete', `${patterns.length} patterns from ${cards.length} card(s)`);
+}
+
+function renderExtrapResults(cards, bin, patterns) {
+  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+    <div style="display:flex;align-items:center;gap:8px"><span class="section-title">Results</span>
+    <span class="badge badge-outline">${patterns.length} patterns</span>
+    <span class="badge badge-outline">BIN: ${bin}</span></div>
+    <button class="btn btn-secondary btn-sm" onclick="copyText('${patterns.map(p=>p.pattern).join('\\n')}')">Copy All</button></div>`;
+
+  patterns.forEach((p, i) => {
+    const patHtml = p.pattern.split('').map(c => c === 'x' ? '<span class="wild">x</span>' : c).join('');
+    html += `<div class="pattern-card ${i===0?'top':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><span class="pattern-label">${esc(p.label)}</span>${i===0?' <span class="badge badge-primary">TOP</span>':''}
+          <div class="pattern-text">${patHtml}</div>
+          <div class="pattern-desc">${esc(p.desc)}</div></div>
+        <button class="btn btn-ghost btn-sm" onclick="copyText('${p.pattern}')">Copy</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap">
+        <input type="number" value="10" min="1" max="100" id="ext-gen-count-${i}" style="width:60px;padding:4px 8px;font-size:.75rem">
+        <button class="btn btn-secondary btn-sm" onclick="genFromExtrap(${i},'${p.pattern}')">Generate</button>
+        <span id="ext-gen-badges-${i}"></span>
+      </div>
+      <div id="ext-gen-list-${i}" class="scroll-area" style="margin-top:6px"></div>
+    </div>`;
+  });
+
+  document.getElementById('extrap-results').innerHTML = html;
+}
+
+function genFromExtrap(idx, pattern) {
+  const count = Math.max(1, Math.min(100, parseInt(document.getElementById(`ext-gen-count-${idx}`).value) || 10));
+  const cardLen = detectCardLen(pattern.replace(/x/gi, '0'));
+  const amexFlag = isAmex(pattern.replace(/x/gi, '0'));
+  const cards = []; const seen = new Set();
+  for (let a = 0; a < count * 20 && cards.length < count; a++) {
+    let card = '';
+    for (let i = 0; i < pattern.length; i++) card += pattern[i].toLowerCase() === 'x' ? Math.floor(Math.random()*10) : pattern[i];
+    while (card.length < cardLen) card += Math.floor(Math.random()*10);
+    card = card.substring(0, cardLen);
+    const partial = card.substring(0, cardLen - 1);
+    card = partial + calcLuhnCheck(partial);
+    if (!seen.has(card)) {
+      seen.add(card);
+      const mm = String(Math.floor(Math.random()*12)+1).padStart(2,'0');
+      const yy = String(new Date().getFullYear()+Math.floor(Math.random()*5)+1).slice(-2);
+      const cv = amexFlag ? String(Math.floor(Math.random()*9000)+1000) : String(Math.floor(Math.random()*900)+100);
+      cards.push({ line: `${card}|${mm}|${yy}|${cv}`, valid: luhnCheck(card) });
+    }
+  }
+  document.getElementById(`ext-gen-badges-${idx}`).innerHTML = `<button class="btn btn-secondary btn-sm" onclick="copyText('${cards.map(c=>c.line).join('\\n')}')">Copy All</button> <span class="badge badge-outline">${cards.filter(c=>c.valid).length}/${cards.length} valid</span>`;
+  let html = '';
+  cards.forEach(c => {
+    html += `<div class="gen-row"><span class="dot ${c.valid?'valid':'invalid'}"></span><span style="flex:1">${esc(c.line)}</span><button class="btn btn-ghost btn-sm" onclick="copyText('${esc(c.line)}')">Copy</button></div>`;
+  });
+  document.getElementById(`ext-gen-list-${idx}`).innerHTML = html;
+}
+
+function resetExtrap() {
+  document.getElementById('extrap-input').value = '';
+  document.getElementById('extrap-results').innerHTML = '';
+  document.getElementById('extrap-luhn').innerHTML = '';
+  document.getElementById('extrap-error').innerHTML = '';
+}
+
+// ===== CARD CHECKER =====
+let proxyList = [];
+let activeProxyIdx = -1;
+let fpEnabled = false;
+let fpMeta = null;
+let checkStopped = false;
+let isChecking = false;
+
+async function apiPost(path, body) {
+  const r = await fetch(API + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  return r.json();
+}
+async function apiGet(path) { const r = await fetch(API + path); return r.json(); }
+
+async function loadProxies() {
+  try {
+    const data = await apiGet('/api/proxy/list');
+    proxyList = data.proxies || [];
+    activeProxyIdx = data.activeIndex ?? -1;
+    renderProxies();
+  } catch {}
+}
+
+function renderProxies() {
+  const working = proxyList.filter(p => p.working).length;
+  const badge = document.getElementById('proxy-status-badge');
+  if (proxyList.length === 0) {
+    badge.className = 'badge badge-outline'; badge.textContent = 'No proxy (optional)';
+  } else {
+    badge.className = working > 0 ? 'badge badge-green' : 'badge badge-red';
+    badge.textContent = `${working}/${proxyList.length} active`;
+  }
+
+  if (proxyList.length === 0) { document.getElementById('proxy-list').innerHTML = ''; return; }
+
+  let html = '<hr class="sep"><div style="font-size:.72rem;color:var(--fg3);margin-bottom:6px;font-weight:500">Proxies' +
+    (activeProxyIdx >= 0 && activeProxyIdx < proxyList.length ?
+      ` · <span style="color:var(--primary2)">Active: ${esc(proxyList[activeProxyIdx].label)}</span>` :
+      ' · Round-Robin') + '</div>';
+
+  proxyList.forEach((p, i) => {
+    html += `<div class="proxy-row ${activeProxyIdx === i ? 'active' : ''}">
+      <div style="display:flex;align-items:center;gap:6px;min-width:0;flex:1">
+        <span class="dot ${p.working ? 'valid' : 'invalid'}" style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:${p.working?'var(--green)':'var(--red)'}"></span>
+        <span style="font-size:.78rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.label)}</span>
+        ${p.country ? `<span class="badge badge-outline" style="font-size:.6rem">${esc(p.country)}</span>` : ''}
+        ${activeProxyIdx === i ? '<span class="badge badge-primary" style="font-size:.6rem">Active</span>' : ''}
+      </div>
+      <div style="display:flex;gap:4px">
+        <button class="btn btn-ghost btn-sm" onclick="setActiveProxy(${i})" title="${activeProxyIdx === i ? 'Unset' : 'Set active'}" style="color:${activeProxyIdx === i ? 'var(--primary2)' : 'var(--fg3)'}">★</button>
+        <button class="btn btn-ghost btn-sm" onclick="removeProxy(${i})" style="color:var(--red)">✕</button>
+      </div>
+    </div>`;
+  });
+  document.getElementById('proxy-list').innerHTML = html;
+}
+
+async function checkProxy() {
+  const proxy = document.getElementById('proxy-input').value.trim();
+  if (!proxy) { showToast('Enter a proxy', '', true); return; }
+  document.getElementById('btn-check-proxy').disabled = true;
+  document.getElementById('btn-check-proxy').innerHTML = '<span class="spinner"></span>Check';
+  document.getElementById('proxy-check-result').innerHTML = '';
+
+  try {
+    const data = await apiPost('/api/proxy/check', { proxy });
+    if (data.working) {
+      document.getElementById('proxy-check-result').innerHTML = `<div class="check-result ok">
+        <div style="font-weight:600">Proxy Working</div>
+        <div style="font-size:.75rem;margin-top:2px">${esc(data.message)}</div>
+        <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">
+          ${data.ip ? `<span class="badge badge-outline" style="font-family:var(--mono)">${esc(data.ip)}</span>` : ''}
+          ${data.country ? `<span class="badge badge-outline">${esc(data.country)}</span>` : ''}
+          ${data.city ? `<span class="badge badge-outline">${esc(data.city)}</span>` : ''}
+          ${data.isp ? `<span class="badge badge-outline">${esc(data.isp)}</span>` : ''}
+        </div>
+        <button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="addProxy()">Add Proxy</button>
+      </div>`;
+      window._lastCheck = data;
+    } else {
+      document.getElementById('proxy-check-result').innerHTML = `<div class="check-result fail"><div style="font-weight:600">Proxy Failed</div><div style="font-size:.75rem">${esc(data.message)}</div></div>`;
+    }
+  } catch (e) {
+    document.getElementById('proxy-check-result').innerHTML = `<div class="check-result fail">Error: ${esc(e.message)}</div>`;
+  }
+  document.getElementById('btn-check-proxy').disabled = false;
+  document.getElementById('btn-check-proxy').innerHTML = 'Check';
+}
+
+async function addProxy() {
+  const proxy = document.getElementById('proxy-input').value.trim();
+  const d = window._lastCheck || {};
+  try {
+    const data = await apiPost('/api/proxy/add', { proxy, label: `${d.country||'Proxy'} - ${d.ip||''}`, ip: d.ip, country: d.country });
+    if (data.success) {
+      proxyList = data.proxies;
+      if (proxyList.length === 1) { await apiPost('/api/proxy/set-active', { index: 0 }); activeProxyIdx = 0; }
+      renderProxies();
+      document.getElementById('proxy-input').value = '';
+      document.getElementById('proxy-check-result').innerHTML = '';
+      showToast('Proxy Added');
+    }
+  } catch { showToast('Error', 'Failed to add', true); }
+}
+
+async function removeProxy(idx) {
+  try {
+    const data = await fetch(API + `/api/proxy/${idx}`, { method: 'DELETE' }).then(r => r.json());
+    if (data.success) { proxyList = data.proxies; activeProxyIdx = data.activeIndex ?? -1; renderProxies(); showToast('Proxy Removed'); }
+  } catch { showToast('Error', '', true); }
+}
+
+async function setActiveProxy(idx) {
+  const newIdx = idx === activeProxyIdx ? -1 : idx;
+  try {
+    await apiPost('/api/proxy/set-active', { index: newIdx });
+    activeProxyIdx = newIdx;
+    renderProxies();
+    showToast(newIdx === -1 ? 'Round-Robin Mode' : 'Active Proxy Set');
+  } catch {}
+}
+
+async function toggleFingerprint() {
+  fpEnabled = !fpEnabled;
+  const sw = document.getElementById('fp-switch');
+  sw.classList.toggle('on', fpEnabled);
+  try {
+    await apiPost('/api/fingerprint/toggle', { enabled: fpEnabled });
+    if (fpEnabled) { await refreshFingerprint(); }
+    else { document.getElementById('fp-preview').classList.add('hidden'); fpMeta = null; }
+    showToast(fpEnabled ? 'Fingerprint ON' : 'Fingerprint OFF', fpEnabled ? 'Auto-randomized per check, geo-matched' : '');
+  } catch { fpEnabled = !fpEnabled; sw.classList.toggle('on', fpEnabled); }
+}
+
+async function refreshFingerprint() {
+  try {
+    const data = await apiGet('/api/fingerprint/preview');
+    fpMeta = data.meta;
+    document.getElementById('fp-preview').classList.remove('hidden');
+    document.getElementById('fp-preview').innerHTML = `<hr class="sep">
+      <div style="display:flex;align-items:center;gap:8px;background:var(--primary-bg);border:1px solid rgba(99,102,241,.2);border-radius:6px;padding:8px 12px">
+        <span style="font-size:.82rem;color:var(--primary2);font-weight:500">Spoofed — identity auto-randomized per request</span>
+      </div>`;
+  } catch {}
+}
+
+let checkMode = 'chkr';
+let grabbedCheckout = null;
+
+async function grabCheckout() {
+  const url = document.getElementById('checkout-url').value.trim();
+  if (!url) { showToast('Missing URL', 'Enter a checkout.stripe.com or buy.stripe.com link', true); return; }
+  const btn = document.getElementById('btn-grab');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Grab';
+  document.getElementById('grab-result').innerHTML = '';
+  document.getElementById('grab-fields').classList.add('hidden');
+  document.getElementById('grab-empty').classList.add('hidden');
+
+  try {
+    const data = await apiPost('/api/stripe-checkout/grab', { checkoutUrl: url });
+    if (data.success) {
+      grabbedCheckout = data;
+      document.getElementById('grabbed-cs').value = data.csLive || '';
+      document.getElementById('grabbed-pk').value = data.pkLive || '';
+      document.getElementById('grabbed-amount').value = data.amount || '';
+      document.getElementById('grabbed-email').value = data.email || '';
+      document.getElementById('grab-fields').classList.remove('hidden');
+      showToast('Grabbed', (data.merchantName ? data.merchantName + ' — ' : '') + 'CS: ' + (data.csLive||'').substring(0,16) + '...');
+    } else {
+      document.getElementById('grab-result').innerHTML = `<div class="check-result fail">${esc(data.message || 'Could not extract details')}</div>`;
+      document.getElementById('grab-empty').classList.remove('hidden');
+    }
+  } catch (e) {
+    document.getElementById('grab-result').innerHTML = `<div class="check-result fail">${esc(e.message || 'Grab failed')}</div>`;
+    document.getElementById('grab-empty').classList.remove('hidden');
+  }
+  btn.disabled = false; btn.textContent = 'Grab';
+}
+
+function setCheckMode(mode) {
+  checkMode = mode;
+  document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
+  document.getElementById('mode-' + mode).classList.add('active');
+  document.getElementById('mode-info-auth').classList.toggle('hidden', mode !== 'stripe-auth');
+  document.getElementById('mode-info-checkout').classList.toggle('hidden', mode !== 'stripe-checkout');
+  const badge = document.getElementById('mode-badge');
+  if (mode === 'chkr') { badge.style.display = 'none'; }
+  else { badge.style.display = ''; badge.textContent = mode === 'stripe-auth' ? 'Stripe Auth' : 'Stripe Checkout'; badge.className = 'badge badge-primary'; }
+  const btnCheck = document.getElementById('btn-check');
+  btnCheck.textContent = mode === 'chkr' ? 'Check Cards' : mode === 'stripe-auth' ? 'Auth Check' : 'Hit Cards';
+}
+
+async function startChecker() {
+  const raw = document.getElementById('checker-input').value;
+  const lines = raw.split(/[\n\r]+/).map(l => l.trim()).filter(l => l.length > 0 && l.replace(/[|,\s]/g, '').length >= 6);
+  if (lines.length === 0) { showToast('No Cards', 'Paste cards in number|month|year|cvv format', true); return; }
+
+  if (checkMode === 'stripe-checkout') {
+    const url = document.getElementById('checkout-url').value.trim();
+    if (!url) { showToast('Missing Checkout URL', 'Enter a buy.stripe.com or checkout.stripe.com link', true); return; }
+  }
+
+  
+
+  isChecking = true; checkStopped = false;
+  document.getElementById('btn-check').classList.add('hidden');
+  document.getElementById('btn-stop').classList.remove('hidden');
+  document.getElementById('checker-input').disabled = true;
+  document.getElementById('checker-results').innerHTML = '';
+
+  const results = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    if (checkStopped) { showToast('Stopped', `After ${i} of ${lines.length} cards`); break; }
+    document.getElementById('checker-progress').classList.remove('hidden');
+    const verb = checkMode === 'chkr' ? 'Checking' : checkMode === 'stripe-auth' ? 'Auth checking' : 'Hitting';
+    document.getElementById('checker-progress').innerHTML = `<span class="spinner"></span> ${verb} card ${i+1} of ${lines.length}...`;
+
+    const parts = lines[i].split(/[|,\s\t]+/).map(p => p.trim()).filter(Boolean);
+    const normalized = parts.length >= 4 ? `${parts[0]}|${parts[1]}|${parts[2]}|${parts[3]}` : parts.length >= 3 ? `${parts[0]}|${parts[1]}|${parts[2]}` : parts[0];
+
+    try {
+      let endpoint = '/api/check-card';
+      let body = { data: normalized };
+      if (checkMode === 'stripe-auth') { endpoint = '/api/stripe-auth'; }
+      else if (checkMode === 'stripe-checkout') { endpoint = '/api/stripe-checkout'; body.checkoutUrl = document.getElementById('checkout-url').value.trim(); }
+
+      const resp = await apiPost(endpoint, body);
+      let status = 'Unknown';
+
+      if (checkMode === 'chkr') {
+        if (resp.code === 1 || resp.status === 'Live') status = 'Live';
+        else if (resp.code === 0 || resp.status === 'Die') status = 'Die';
+      } else {
+        const s = (resp.status || '').toUpperCase();
+        if (s === 'APPROVED' || s === 'CHARGED' || resp.approved === true) status = checkMode === 'stripe-checkout' ? 'Charged' : 'Approved';
+        else if (s === '3DS') status = '3DS';
+        else if (s === 'DECLINED') status = 'Declined';
+        else if (s === 'ERROR') status = 'Error';
+      }
+
+      results.push({ card: normalized, status, message: resp.message || resp.status || 'No response',
+        bank: resp.card?.bank, type: resp.card?.type, country: resp.card?.country?.name, fp: resp.fingerprint,
+        gateway: resp.gateway, time: resp.time, chargeAmount: resp.chargeAmount, currency: resp.currency });
+    } catch (e) {
+      results.push({ card: normalized, status: 'Unknown', message: e.message || 'Request failed' });
+    }
+
+    renderCheckerResults(results);
+
+    if (i < lines.length - 1 && !checkStopped) {
+      const baseDelay = checkMode === 'chkr' ? 4000 : 3000;
+      await new Promise(r => setTimeout(r, baseDelay + Math.floor(Math.random() * 2000)));
+    }
+  }
+
+  isChecking = false;
+  document.getElementById('btn-check').classList.remove('hidden');
+  document.getElementById('btn-stop').classList.add('hidden');
+  document.getElementById('checker-input').disabled = false;
+  document.getElementById('checker-progress').classList.add('hidden');
+  const live = results.filter(r => r.status === 'Live' || r.status === 'Approved' || r.status === 'Charged').length;
+  const dead = results.filter(r => r.status === 'Die' || r.status === 'Declined').length;
+  const tds = results.filter(r => r.status === '3DS').length;
+  showToast('Check Complete', `${live} live, ${dead} dead${tds ? `, ${tds} 3DS` : ''}, ${results.length - live - dead - tds} unknown`);
+}
+
+function stopChecker() { checkStopped = true; showToast('Stopping', 'After current card...'); }
+
+function resetChecker() {
+  checkStopped = true;
+  document.getElementById('checker-input').value = '';
+  document.getElementById('checker-input').disabled = false;
+  document.getElementById('checker-results').innerHTML = '';
+  document.getElementById('checker-progress').classList.add('hidden');
+  document.getElementById('btn-check').classList.remove('hidden');
+  document.getElementById('btn-stop').classList.add('hidden');
+}
+
+function renderCheckerResults(results) {
+  const live = results.filter(r => r.status === 'Live' || r.status === 'Approved' || r.status === 'Charged');
+  const dead = results.filter(r => r.status === 'Die' || r.status === 'Declined');
+  const tds = results.filter(r => r.status === '3DS');
+  const unknown = results.filter(r => !['Live','Approved','Charged','Die','Declined','3DS'].includes(r.status));
+
+  const liveLabel = checkMode === 'stripe-checkout' ? 'Charged' : checkMode === 'stripe-auth' ? 'Approved' : 'Live';
+  const deadLabel = checkMode !== 'chkr' ? 'Declined' : 'Dead';
+
+  let html = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+    <span class="section-title">Results</span>
+    ${live.length ? `<span class="badge badge-green">${live.length} ${liveLabel}</span>` : ''}
+    ${tds.length ? `<span class="badge badge-blue">${tds.length} 3DS</span>` : ''}
+    ${dead.length ? `<span class="badge badge-red">${dead.length} ${deadLabel}</span>` : ''}
+    ${unknown.length ? `<span class="badge badge-yellow">${unknown.length} Unknown</span>` : ''}</div>`;
+
+  function renderSection(title, items, cls, color) {
+    if (items.length === 0) return '';
+    let s = `<div class="card"><div class="card-header"><div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:.85rem;font-weight:600;color:${color}">${title}</span>
+      <span class="badge badge-${cls}" style="font-size:.6rem">${items.length}</span></div>
+      <button class="btn btn-secondary btn-sm" onclick="copyText('${items.map(r=>r.card).join('\\n')}')">Copy All</button></div><div class="card-body"><div class="scroll-area">`;
+    items.forEach(r => {
+      const gatewayBadge = r.gateway ? `<span class="badge badge-outline" style="font-size:.6rem">${esc(r.gateway)}</span>` : '';
+      const timeBadge = r.time ? `<span class="badge badge-outline" style="font-size:.6rem">${r.time}s</span>` : '';
+      const chargeBadge = r.chargeAmount ? `<span class="badge badge-green" style="font-size:.6rem">$${(parseInt(r.chargeAmount)/100).toFixed(2)} ${(r.currency||'').toUpperCase()}</span>` : '';
+      s += `<div class="result-row ${cls}"><div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span class="result-card-num">${esc(r.card)}</span>
+          <span class="badge badge-${cls}" style="font-size:.6rem">${r.status}</span></div>
+        <div class="result-msg">${esc(r.message)}</div>
+        <div class="result-badges">
+          ${r.bank && r.bank !== 'Unknown' ? `<span class="badge badge-outline">${esc(r.bank)}</span>` : ''}
+          ${r.type && r.type !== 'Unknown' ? `<span class="badge badge-outline" style="text-transform:capitalize">${esc(r.type)}</span>` : ''}
+          ${r.country && r.country !== 'Unknown' ? `<span class="badge badge-outline">${esc(r.country)}</span>` : ''}
+          ${gatewayBadge}${timeBadge}${chargeBadge}
+        </div>
+        ${r.fp ? `<div class="result-fp">${esc(r.fp.system||'')} · ${esc(r.fp.timezone||'')} · ${esc(r.fp.screen||'')} · ${esc(r.fp.mac||'')}</div>` : ''}
+      </div><button class="btn btn-ghost btn-sm" onclick="copyText('${esc(r.card)}')">Copy</button></div>`;
+    });
+    s += '</div></div></div>';
+    return s;
+  }
+
+  html += renderSection(liveLabel + ' Cards', live, 'green', 'var(--green)');
+  html += renderSection('3DS Required', tds, 'blue', '#60a5fa');
+  html += renderSection(deadLabel + ' Cards', dead, 'red', 'var(--red)');
+  html += renderSection('Unknown', unknown, 'yellow', 'var(--yellow)');
+  document.getElementById('checker-results').innerHTML = html;
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  loadProxies();
+  apiGet('/api/fingerprint/status').then(d => {
+    fpEnabled = d.enabled;
+    document.getElementById('fp-switch').classList.toggle('on', fpEnabled);
+    if (fpEnabled) refreshFingerprint();
+  }).catch(() => {});
+});
+</script>
+</body>
+</html>

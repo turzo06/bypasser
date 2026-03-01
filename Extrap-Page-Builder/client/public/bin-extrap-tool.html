@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>CC Toolkit</title>
+<meta name="description" content="Card Generator, BIN Extrap Tool, and Card Checker — all in one page.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ffffff;--bg-card:#f8f8f8;--fg:#171717;--fg-muted:#6b6b6b;--fg-muted2:#a0a0a0;
+  --border:#e5e5e5;--accent-bg:#eef1f6;--primary:#1a56db;--primary-fg:#fff;
+  --destructive:#dc2626;--destructive-bg:#fef2f2;--green:#22c55e;--yellow:#eab308;
+  --radius:8px;--font-sans:'Inter',system-ui,sans-serif;--font-mono:'JetBrains Mono',monospace;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#171717;--bg-card:#1e1e1e;--fg:#fafafa;--fg-muted:#a0a0a0;--fg-muted2:#666;
+    --border:#2e2e2e;--accent-bg:#1e2330;--primary:#3b82f6;--primary-fg:#fff;
+    --destructive:#ef4444;--destructive-bg:#2a1515;--green:#4ade80;--yellow:#facc15;
+  }
+}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--fg);line-height:1.5;-webkit-font-smoothing:antialiased}
+.header{border-bottom:1px solid var(--border);background:var(--bg-card);position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(26,86,219,.04),transparent 60%,rgba(26,86,219,.02))}
+.header-inner{max-width:56rem;margin:0 auto;padding:2rem 1rem 1.5rem;position:relative}
+.header-row{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem}
+.logo{width:40px;height:40px;border-radius:var(--radius);background:var(--primary);color:var(--primary-fg);display:flex;align-items:center;justify-content:center}
+.logo svg{width:20px;height:20px}
+h1{font-size:1.75rem;font-weight:700;letter-spacing:-.02em}
+.tab-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+.tab-btn{display:flex;flex-direction:column;align-items:center;gap:6px;padding:.75rem .5rem;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg-card);color:var(--fg-muted);cursor:pointer;transition:all .15s;font-family:var(--font-sans);font-size:.8rem;font-weight:500}
+.tab-btn:hover{background:var(--accent-bg);color:var(--fg)}
+.tab-btn.active{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+.tab-btn svg{width:20px;height:20px}
+.container{max-width:56rem;margin:0 auto;padding:1.5rem 1rem}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:1rem}
+.card-top{border-color:color-mix(in srgb,var(--primary) 40%,transparent)}
+.card-header{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:1rem 1rem .75rem}
+.card-header-left{display:flex;align-items:center;gap:.5rem;color:var(--fg-muted)}
+.card-header-left svg{width:16px;height:16px}
+.card-title{font-size:1.1rem;font-weight:600;color:var(--fg)}
+.card-body{padding:0 1rem 1rem}
+.badge{display:inline-flex;align-items:center;font-size:.75rem;font-weight:500;padding:.15rem .5rem;border-radius:999px;white-space:nowrap}
+.badge-secondary{background:var(--accent-bg);color:var(--fg-muted)}
+.badge-outline{border:1px solid var(--border);color:var(--fg-muted)}
+.badge-primary{background:var(--primary);color:var(--primary-fg);font-size:.625rem;padding:.1rem .4rem}
+.badge-green{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.3)}
+.badge-red{background:rgba(220,38,38,.1);color:var(--destructive);border:1px solid rgba(220,38,38,.3)}
+.badge-yellow{background:rgba(234,179,8,.1);color:var(--yellow);border:1px solid rgba(234,179,8,.3)}
+.info-box{display:flex;align-items:flex-start;gap:.5rem;background:var(--accent-bg);border-radius:var(--radius);padding:.6rem .75rem;font-size:.85rem;color:var(--fg-muted);margin-bottom:.75rem}
+.info-box svg{width:16px;height:16px;flex-shrink:0;margin-top:2px}
+.info-box code{font-family:var(--font-mono);font-size:.75rem;background:var(--bg);padding:.1rem .3rem;border-radius:4px}
+.error-box{display:flex;align-items:flex-start;gap:.5rem;background:var(--destructive-bg);border-radius:var(--radius);padding:.6rem .75rem;font-size:.85rem;color:var(--destructive);margin-top:.75rem}
+.error-box svg{width:16px;height:16px;flex-shrink:0;margin-top:2px}
+textarea,input[type="text"],input[type="number"]{font-family:var(--font-mono);font-size:.85rem;padding:.5rem .65rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--fg);outline:none;transition:border-color .15s}
+textarea{width:100%;min-height:140px;resize:vertical}
+textarea:focus,input:focus{border-color:var(--primary)}
+.separator{height:1px;background:var(--border);margin:1rem 0}
+.actions{display:flex;align-items:center;gap:.5rem;justify-content:flex-end;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-sans);font-size:.85rem;font-weight:500;padding:.4rem .85rem;border-radius:var(--radius);border:1px solid transparent;cursor:pointer;transition:opacity .15s,transform .1s;user-select:none}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+.btn-ghost{background:transparent;color:var(--fg-muted);border:none}
+.btn-ghost:hover{color:var(--fg)}
+.btn-outline{background:transparent;color:var(--fg);border-color:var(--border)}
+.btn-secondary{background:var(--accent-bg);color:var(--fg);border-color:var(--border)}
+.btn-sm{font-size:.8rem;padding:.3rem .7rem}
+.btn-icon{padding:.4rem;border:none;background:transparent;color:var(--fg-muted);cursor:pointer;border-radius:var(--radius);display:inline-flex;align-items:center;justify-content:center}
+.btn-icon:hover{color:var(--fg);background:var(--accent-bg)}
+.btn svg{width:16px;height:16px}
+.results-header{display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem}
+.results-header-left{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.results-title{font-size:1.25rem;font-weight:600}
+.pattern-card .card-body{padding:.75rem 1rem}
+.pattern-row{display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.pattern-info{flex:1;min-width:0}
+.pattern-label{font-size:.75rem;font-weight:500;color:var(--fg-muted);display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.pattern-code{font-family:var(--font-mono);font-size:1.05rem;letter-spacing:.1em;display:block;margin-top:2px;word-break:break-all}
+.pattern-desc{font-size:.75rem;color:var(--fg-muted2);margin-top:4px}
+.char-x{color:var(--primary);font-weight:700}
+.char-d{color:var(--fg)}
+.empty-state{text-align:center;padding:3rem 1rem}
+.empty-icon{width:56px;height:56px;border-radius:50%;background:var(--accent-bg);display:inline-flex;align-items:center;justify-content:center;margin-bottom:1rem;color:var(--fg-muted)}
+.empty-icon svg{width:24px;height:24px}
+.empty-title{font-size:1rem;font-weight:500;color:var(--fg-muted);margin-bottom:.25rem}
+.empty-text{font-size:.875rem;color:var(--fg-muted2);max-width:20rem;margin:0 auto}
+.hidden{display:none}
+.fade-in{animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.luhn-row{display:flex;align-items:center;gap:6px;font-size:.75rem;font-family:var(--font-mono)}
+.luhn-row svg{width:14px;height:14px;flex-shrink:0}
+.luhn-valid{color:var(--green)}
+.luhn-invalid{color:var(--destructive)}
+.luhn-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.gen-controls{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.gen-input{width:60px;height:32px}
+.gen-label{font-size:.75rem;color:var(--fg-muted)}
+.gen-list{margin-top:8px;max-height:300px;overflow-y:auto}
+.gen-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 10px;border-radius:var(--radius);background:color-mix(in srgb,var(--accent-bg) 40%,transparent);margin-bottom:4px}
+.gen-row:hover .gen-copy-btn{opacity:1}
+.gen-row code{font-family:var(--font-mono);font-size:.78rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gen-copy-btn{opacity:0;transition:opacity .15s}
+.gen-row-left{display:flex;align-items:center;gap:6px;min-width:0;flex:1}
+.gen-badge{font-size:.7rem;color:var(--fg-muted)}
+.form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-top:.75rem}
+.form-group label{display:block;font-size:.8rem;font-weight:500;margin-bottom:4px}
+.form-group input{width:100%;height:36px}
+.check-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:8px 12px;border-radius:var(--radius);margin-bottom:4px}
+.check-row.live{background:rgba(34,197,94,.05)}
+.check-row.die{background:rgba(220,38,38,.05)}
+.check-row.unknown{background:rgba(234,179,8,.05)}
+.check-row-left{display:flex;align-items:flex-start;gap:8px;min-width:0;flex:1}
+.check-row-left svg{width:16px;height:16px;flex-shrink:0;margin-top:2px}
+.check-info{min-width:0;flex:1}
+.check-info code{font-family:var(--font-mono);font-size:.78rem}
+.check-info .msg{font-size:.72rem;color:var(--fg-muted2);margin-top:2px}
+.check-info .meta{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:640px){
+  h1{font-size:1.4rem}
+  .pattern-code{font-size:.85rem;letter-spacing:.06em}
+  .form-grid{grid-template-columns:repeat(2,1fr)}
+  .tab-btn{font-size:.7rem;padding:.5rem .25rem}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-row">
+      <div class="logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+      <h1>CC Toolkit</h1>
+    </div>
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('generator')" id="tabBtn-generator">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+        Card Generator
+      </button>
+      <button class="tab-btn" onclick="switchTab('extrap')" id="tabBtn-extrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        BIN Extrap
+      </button>
+      <button class="tab-btn" onclick="switchTab('checker')" id="tabBtn-checker">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
+        Card Checker
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- GENERATOR TAB -->
+  <div id="tab-generator">
+    <div class="card">
+      <div class="card-header"><div class="card-header-left"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg><span class="card-title">Card Generator</span></div></div>
+      <div class="card-body">
+        <div class="info-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>Enter a BIN or extrap pattern (use <code>x</code> for wildcards). Leave month/year/CVV empty for random values.</span></div>
+        <div class="form-group"><label>BIN / Extrap Pattern</label><input type="text" id="genBinInput" placeholder="e.g. 453201xxxxxxxxxx or 453201" style="width:100%;height:36px"></div>
+        <div class="form-grid">
+          <div class="form-group"><label>Month</label><input type="text" id="genMonth" placeholder="MM" maxlength="2"></div>
+          <div class="form-group"><label>Year</label><input type="text" id="genYear" placeholder="YY" maxlength="2"></div>
+          <div class="form-group"><label>CVV</label><input type="text" id="genCvv" placeholder="rnd" maxlength="4"></div>
+          <div class="form-group"><label>Count</label><input type="number" id="genCount" value="10" min="1" max="100"></div>
+        </div>
+        <div class="separator"></div>
+        <div class="actions">
+          <button class="btn btn-ghost" onclick="resetGenerator()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> Reset</button>
+          <button class="btn btn-primary" onclick="runGenerator()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/></svg> Generate</button>
+        </div>
+      </div>
+    </div>
+    <div id="genResults"></div>
+    <div id="genEmpty" class="empty-state"><div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg></div><h3 class="empty-title">No cards generated</h3><p class="empty-text">Enter a BIN or extrap pattern and click Generate.</p></div>
+  </div>
+
+  <!-- EXTRAP TAB -->
+  <div id="tab-extrap" class="hidden">
+    <div class="card">
+      <div class="card-header"><div class="card-header-left"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg><span class="card-title">Input Cards</span></div><span class="badge badge-secondary" id="cardCountBadge"></span></div>
+      <div class="card-body">
+        <div class="info-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>Paste one card per line. Formats like <code>number|date|cvv</code> are supported &mdash; date and CVV are auto-removed.</span></div>
+        <textarea id="cardInput" rows="7"></textarea>
+        <div id="luhnStatus" class="luhn-wrap"></div>
+        <div id="errorBox" class="error-box hidden"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span id="errorText"></span></div>
+        <div class="separator"></div>
+        <div class="actions">
+          <button class="btn btn-ghost" onclick="handleReset()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> Reset</button>
+          <button class="btn btn-primary" onclick="handleExtrap()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Extrap</button>
+        </div>
+      </div>
+    </div>
+    <div id="resultsSection" class="hidden"></div>
+    <div id="emptyState" class="empty-state"><div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><h3 class="empty-title">No results yet</h3><p class="empty-text">Paste your card numbers above and click Extrap.</p></div>
+  </div>
+
+  <!-- CHECKER TAB -->
+  <div id="tab-checker" class="hidden">
+    <div class="card">
+      <div class="card-header"><div class="card-header-left"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg><span class="card-title">Card Checker</span></div></div>
+      <div class="card-body">
+        <div class="info-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>Paste cards one per line in format <code>number|month|year|cvv</code>. Checked via chkr.cc API with 2s delay.</span></div>
+        <textarea id="checkerInput" rows="7"></textarea>
+        <div id="checkerStatus" class="hidden" style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.85rem;color:var(--fg-muted)"><div class="spinner"></div><span id="checkerStatusText"></span></div>
+        <div class="separator"></div>
+        <div class="actions">
+          <button class="btn btn-ghost" onclick="resetChecker()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> Reset</button>
+          <button class="btn btn-primary" id="checkBtn" onclick="runChecker()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polygon points="5 3 19 12 5 21 5 3"/></svg> Check Cards</button>
+        </div>
+      </div>
+    </div>
+    <div id="checkerResults" class="hidden"></div>
+    <div id="checkerEmpty" class="empty-state"><div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg></div><h3 class="empty-title">No results yet</h3><p class="empty-text">Paste your cards above and click Check Cards.</p></div>
+  </div>
+</div>
+
+<script>
+const ICONS = {
+  copy: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>',
+  check: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  valid: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>',
+  invalid: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>',
+  live16: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>',
+  die16: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="luhn-invalid"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>',
+  unknown16: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--yellow)"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>',
+};
+
+const _genData = {};
+let _checkerData = [];
+
+function switchTab(id) {
+  ['generator','extrap','checker'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('hidden', t !== id);
+    document.getElementById('tabBtn-'+t).classList.toggle('active', t === id);
+  });
+}
+
+function copyText(text, btnId) {
+  navigator.clipboard.writeText(text).then(() => {
+    const b = document.getElementById(btnId);
+    if (b) { const o = b.innerHTML; b.innerHTML = ICONS.check; setTimeout(() => { b.innerHTML = o; }, 1500); }
+  });
+}
+
+function luhnCheck(num) {
+  const d = num.replace(/\D/g, ''); if (!d.length) return false;
+  let s = 0, a = false;
+  for (let i = d.length-1; i >= 0; i--) { let n = parseInt(d[i],10); if (a){n*=2;if(n>9)n-=9;} s+=n; a=!a; }
+  return s%10===0;
+}
+function calcLuhnCD(p) {
+  const d = p.replace(/\D/g,''); let s=0, a=true;
+  for (let i = d.length-1; i >= 0; i--) { let n = parseInt(d[i],10); if(a){n*=2;if(n>9)n-=9;} s+=n; a=!a; }
+  return (10-(s%10))%10;
+}
+function genDate() { const n=new Date(), fm=Math.floor(Math.random()*48)+1, dt=new Date(n.getFullYear(),n.getMonth()+fm,1); return String(dt.getMonth()+1).padStart(2,'0')+'|'+String(dt.getFullYear()).slice(-2); }
+function genCVV(amex) { return amex ? String(Math.floor(Math.random()*9000)+1000) : String(Math.floor(Math.random()*900)+100); }
+function fmtPattern(p) { return p.split('').map(c => c.toLowerCase()==='x' ? '<span class="char-x">'+c+'</span>' : '<span class="char-d">'+c+'</span>').join(''); }
+function parseCards(raw) { return raw.split(/[\n\r]+/).map(l=>l.trim()).filter(l=>l.length>0).map(l=>{const p=l.split(/[|,\s\t]+/);const n=(p[0]||'').replace(/\D/g,'');return n&&n.length>=6?n.substring(0,16):null}).filter(Boolean); }
+function valBin(cards) { if(!cards.length)return{valid:false,bin:'',message:'No cards.'}; const b=cards[0].substring(0,6); for(let i=1;i<cards.length;i++){if(cards[i].substring(0,6)!==b)return{valid:false,bin:b,message:'BIN mismatch at card '+(i+1)};} return{valid:true,bin:b,message:''}; }
+function cntFixed(p){return p.split('').filter(c=>c!=='x').length;}
+
+function genFromPattern(pat, count) {
+  const r=[], seen=new Set();
+  for(let a=0;a<count*30&&r.length<count;a++){
+    let c='';for(let i=0;i<pat.length;i++)c+=pat[i].toLowerCase()==='x'?Math.floor(Math.random()*10):pat[i];
+    while(c.length<16)c+=Math.floor(Math.random()*10);c=c.substring(0,16);
+    const p=c.substring(0,15);c=p+calcLuhnCD(p);
+    if(!seen.has(c)){seen.add(c);r.push({number:c,luhnValid:luhnCheck(c)});}
+  }
+  return r;
+}
+
+/* ===== GENERATOR ===== */
+function runGenerator() {
+  const bin = document.getElementById('genBinInput').value.replace(/[^0-9xX]/g,'');
+  if (bin.length < 6) { alert('Enter at least 6 digits for BIN.'); return; }
+  const mm = document.getElementById('genMonth').value.replace(/\D/g,'').substring(0,2);
+  const yy = document.getElementById('genYear').value.replace(/\D/g,'').substring(0,2);
+  const cv = document.getElementById('genCvv').value.replace(/\D/g,'').substring(0,4);
+  const cnt = Math.max(1, Math.min(100, parseInt(document.getElementById('genCount').value)||10));
+  const isAmex = bin.startsWith('3');
+  const raw = genFromPattern(bin, cnt);
+  const cards = raw.map(c => {
+    let m=mm||String(Math.floor(Math.random()*12)+1).padStart(2,'0');
+    let y=yy||(()=>{const n=new Date();return String(n.getFullYear()+Math.floor(Math.random()*5)+1).slice(-2)})();
+    let v=cv||genCVV(isAmex);
+    return {...c, full: c.number+'|'+m+'|'+y+'|'+v};
+  });
+  window._genCards = cards;
+  document.getElementById('genEmpty').classList.add('hidden');
+  let h='<div class="fade-in"><div class="results-header"><div class="results-header-left"><h2 class="results-title">Generated Cards</h2><span class="badge badge-secondary">'+cards.length+' cards</span><span class="badge badge-outline">'+cards.filter(c=>c.luhnValid).length+'/'+cards.length+' Luhn valid</span></div>';
+  h+='<button class="btn btn-outline btn-sm" id="cpAllGen" onclick="copyText(window._genCards.map(c=>c.full).join(\'\\n\'),\'cpAllGen\')">'+ICONS.copy+' Copy All</button></div>';
+  h+='<div class="card"><div class="card-body" style="padding:12px"><div class="gen-list" style="max-height:400px">';
+  cards.forEach((c,i) => {
+    const bid='gcg'+i;
+    h+='<div class="gen-row"><div class="gen-row-left">'+ICONS.valid+'<code>'+c.full+'</code></div>';
+    h+='<button class="btn-icon gen-copy-btn" id="'+bid+'" onclick="copyText(\''+c.full+'\',\''+bid+'\')">'+ICONS.copy+'</button></div>';
+  });
+  h+='</div></div></div></div>';
+  document.getElementById('genResults').innerHTML = h;
+}
+function resetGenerator() {
+  document.getElementById('genBinInput').value='';
+  document.getElementById('genMonth').value='';
+  document.getElementById('genYear').value='';
+  document.getElementById('genCvv').value='';
+  document.getElementById('genResults').innerHTML='';
+  document.getElementById('genEmpty').classList.remove('hidden');
+}
+
+/* ===== EXTRAP ===== */
+const cardInput = document.getElementById('cardInput');
+cardInput.addEventListener('input', updateCardCount);
+function updateCardCount() {
+  const cards = parseCards(cardInput.value);
+  const cb = document.getElementById('cardCountBadge');
+  cb.textContent = cards.length > 0 ? cards.length+(cards.length===1?' card':' cards')+' detected' : '';
+  let lh='';
+  cards.forEach((c,i)=>{const v=luhnCheck(c);lh+='<div class="luhn-row '+(v?'luhn-valid':'luhn-invalid')+'">'+(v?ICONS.valid:ICONS.invalid)+'<span>Card '+(i+1)+': '+(v?'Luhn valid':'Luhn invalid')+'</span></div>';});
+  document.getElementById('luhnStatus').innerHTML=lh;
+}
+
+function generateExtraps(cards) {
+  const v = valBin(cards); if (!v.valid) return { inputCards:cards,bin:'',patterns:[] };
+  const bin=v.bin, padded=cards.map(c=>c.padEnd(16,'0').substring(0,16)), patterns=[], seen=new Set();
+  function add(p,l,d,pr){if(!seen.has(p)&&p!==bin+'xxxxxxxxxx'){seen.add(p);patterns.push({pattern:p,label:l,description:d,priority:pr});}}
+  if(cards.length===1){const c=padded[0];add(c.substring(0,12)+'xxxx','Last 4 Masked','Full number with last 4 replaced',1);let se='',so='';for(let i=0;i<16;i++){if(i<6){se+=c[i];so+=c[i];}else if(i<12&&i%2===0){se+=c[i];so+='x';}else if(i<12&&i%2===1){se+='x';so+=c[i];}else{se+='x';so+='x';}}add(se,'SoFIA A','Alternating even kept',3);add(so,'SoFIA B','Alternating odd kept',4);add(bin+'xxxxxxxxxx','Base BIN','Widest range',10);}
+  if(cards.length>=2){let fm='';for(let i=0;i<16;i++){fm+=padded.every(c=>c[i]===padded[0][i])?padded[0][i]:'x';}const be=fm.substring(0,12)+'xxxx';const fc=cntFixed(be);if(fc>6)add(be,'Best Extrap',fc+' matching digits',1);const pl=[];for(let a=0;a<padded.length;a++)for(let b=a+1;b<padded.length;b++){let pm='';for(let i=0;i<12;i++)pm+=padded[a][i]===padded[b][i]?padded[a][i]:'x';pm+='xxxx';const pf=cntFixed(pm);if(pf>6&&!seen.has(pm))pl.push({pattern:pm,fixed:pf,label:'Pair ('+(a+1)+' vs '+(b+1)+')'});}pl.sort((a,b)=>b.fixed-a.fixed);pl.slice(0,3).forEach(p=>add(p.pattern,p.label,p.fixed+' matching',2));for(let a=0;a<padded.length&&a<2;a++)for(let b=a+1;b<padded.length&&b<3;b++){let sf=bin;for(let i=6;i<12;i++){if(padded[a][i]===padded[b][i])sf+=padded[a][i];else if(i%2===0)sf+=padded[a][i];else sf+='x';}sf+='xxxx';add(sf,'SoFIA ('+(a+1)+'+'+(b+1)+')','SoFIA substitution',3);}const cA=padded[0],cB=padded[1],kA=bin+cA[6],kB=bin+cB[6],pA=[],pB=[];for(let i=7;i<11;i+=2){pA.push((parseInt(cA[i])||0)+(parseInt(cA[i+1])||0));pB.push((parseInt(cB[i])||0)+(parseInt(cB[i+1])||0));}if(pA.length>=2&&pB.length>=2){const sA=pA.reduce((s,v)=>s+v,0),sB=pB.reduce((s,v)=>s+v,0);const fv=String(Math.floor((sA/2)*5)+Math.floor((sB/2)*5)).substring(0,2).padStart(2,'0');const mA=(kA+fv+'xxxxxxx').substring(0,16),mB=(kB+fv+'xxxxxxx').substring(0,16);add(mA,'Math A','Computed '+fv,4);if(mA!==mB)add(mB,'Math B','Computed '+fv,5);}add(bin+'xxxxxxxxxx','Base BIN','Fallback',10);}
+  patterns.sort((a,b)=>a.priority-b.priority);return{inputCards:cards,bin,patterns};
+}
+
+function handleExtrap() {
+  document.getElementById('errorBox').classList.add('hidden');
+  const cards = parseCards(cardInput.value);
+  if(!cards.length){document.getElementById('errorText').textContent='No valid cards.';document.getElementById('errorBox').classList.remove('hidden');document.getElementById('resultsSection').classList.add('hidden');document.getElementById('emptyState').classList.remove('hidden');return;}
+  const v=valBin(cards);if(!v.valid){document.getElementById('errorText').textContent=v.message;document.getElementById('errorBox').classList.remove('hidden');document.getElementById('resultsSection').classList.add('hidden');document.getElementById('emptyState').classList.remove('hidden');return;}
+  renderExtrapResults(generateExtraps(cards));
+}
+function handleReset(){cardInput.value='';document.getElementById('errorBox').classList.add('hidden');document.getElementById('resultsSection').classList.add('hidden');document.getElementById('resultsSection').innerHTML='';document.getElementById('emptyState').classList.remove('hidden');document.getElementById('cardCountBadge').textContent='';document.getElementById('luhnStatus').innerHTML='';}
+
+function renderExtrapResults(res) {
+  if(!res||!res.patterns.length){document.getElementById('resultsSection').classList.add('hidden');document.getElementById('emptyState').classList.remove('hidden');return;}
+  document.getElementById('emptyState').classList.add('hidden');document.getElementById('resultsSection').classList.remove('hidden');
+  window._allPatterns=res.patterns.map(p=>p.pattern).join('\n');
+  let h='<div class="fade-in"><div class="results-header"><div class="results-header-left"><h2 class="results-title">Results</h2><span class="badge badge-secondary">'+res.patterns.length+' patterns</span><span class="badge badge-outline">BIN: '+res.bin+'</span></div><button class="btn btn-outline btn-sm" id="cpAllPat" onclick="copyText(window._allPatterns,\'cpAllPat\')">'+ICONS.copy+' Copy All</button></div>';
+  res.patterns.forEach((item,idx)=>{
+    const isTop=idx===0,cls=isTop?'card pattern-card card-top':'card pattern-card',bid='cpP'+idx,gid='gl'+idx,cid='gc'+idx;
+    h+='<div class="'+cls+'"><div class="card-body"><div class="pattern-row"><div class="pattern-info"><div class="pattern-label">'+item.label+(isTop?' <span class="badge badge-primary">TOP</span>':'')+'</div><code class="pattern-code">'+fmtPattern(item.pattern)+'</code><p class="pattern-desc">'+item.description+'</p></div><button class="btn-icon" id="'+bid+'" onclick="copyText(\''+item.pattern+'\',\''+bid+'\')">'+ICONS.copy+'</button></div>';
+    h+='<div class="gen-controls"><span class="gen-label">Count:</span><input type="number" min="1" max="100" value="10" class="gen-input" id="'+cid+'"><button class="btn btn-sm btn-secondary" onclick="handleGenExtrap('+idx+',\''+item.pattern+'\')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/></svg> Generate</button><span id="gb'+idx+'" class="gen-badge hidden"></span><button class="btn btn-sm btn-outline hidden" id="cpg'+idx+'" onclick="copyAllGen('+idx+')">'+ICONS.copy+' Copy All</button></div>';
+    h+='<div class="gen-list hidden" id="'+gid+'"></div></div></div>';
+  });
+  h+='</div>';document.getElementById('resultsSection').innerHTML=h;
+}
+
+function handleGenExtrap(idx, pattern) {
+  const cnt=Math.max(1,Math.min(100,parseInt(document.getElementById('gc'+idx)?.value)||10));
+  const cards=genFromPattern(pattern,cnt),isAmex=pattern.startsWith('3');
+  _genData[idx]=cards.map(c=>{const d=genDate(),cv=genCVV(isAmex);return{...c,full:c.number+'|'+d+'|'+cv};});
+  const el=document.getElementById('gl'+idx),bg=document.getElementById('gb'+idx),cb=document.getElementById('cpg'+idx);
+  bg.textContent=cards.filter(c=>c.luhnValid).length+'/'+cards.length+' Luhn valid';bg.classList.remove('hidden');cb.classList.remove('hidden');el.classList.remove('hidden');
+  let h='';_genData[idx].forEach((g,gi)=>{const bid='gx'+idx+'_'+gi;h+='<div class="gen-row"><div class="gen-row-left">'+(g.luhnValid?ICONS.valid:ICONS.invalid)+'<code>'+g.full+'</code></div><button class="btn-icon gen-copy-btn" id="'+bid+'" onclick="copyText(\''+g.full+'\',\''+bid+'\')">'+ICONS.copy+'</button></div>';});
+  el.innerHTML=h;
+}
+function copyAllGen(idx){if(!_genData[idx])return;copyText(_genData[idx].map(g=>g.full).join('\n'),'cpg'+idx);}
+
+/* ===== CHECKER ===== */
+let _checking = false;
+async function runChecker() {
+  if (_checking) return;
+  const lines = document.getElementById('checkerInput').value.split(/[\n\r]+/).map(l=>l.trim()).filter(l=>l.length>5);
+  if (!lines.length) { alert('Paste cards in format: number|month|year|cvv'); return; }
+  _checking = true; _checkerData = [];
+  document.getElementById('checkBtn').disabled = true;
+  document.getElementById('checkerEmpty').classList.add('hidden');
+  document.getElementById('checkerResults').classList.add('hidden');
+  const st = document.getElementById('checkerStatus'); st.style.display='flex';
+  const stText = document.getElementById('checkerStatusText');
+
+  for (let i = 0; i < lines.length; i++) {
+    stText.textContent = 'Checking card '+(i+1)+' of '+lines.length+'...';
+    const parts = lines[i].split(/[|,\s\t]+/).filter(Boolean);
+    const normalized = parts.length>=4 ? parts[0]+'|'+parts[1]+'|'+parts[2]+'|'+parts[3] : parts.length===3 ? parts[0]+'|'+parts[1]+'|'+parts[2] : parts[0];
+    try {
+      const resp = await fetch('/api/check-card', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:normalized})});
+      const json = await resp.json();
+      let status = 'Unknown';
+      if (json.code===1||json.status==='Live') status='Live';
+      else if (json.code===0||json.status==='Die') status='Die';
+      _checkerData.push({card:normalized,status,message:json.message||json.status||'',bank:json.card?.bank,type:json.card?.type,country:json.card?.country?.name});
+    } catch(e) {
+      _checkerData.push({card:normalized,status:'Error',message:e.message||'Failed'});
+    }
+    renderCheckerResults();
+    if (i < lines.length-1) await new Promise(r=>setTimeout(r,3000));
+  }
+  st.style.display='none';
+  _checking = false;
+  document.getElementById('checkBtn').disabled = false;
+}
+
+function renderCheckerResults() {
+  if(!_checkerData.length)return;
+  const el=document.getElementById('checkerResults');el.classList.remove('hidden');
+  const live=_checkerData.filter(r=>r.status==='Live').length, die=_checkerData.filter(r=>r.status==='Die').length, unk=_checkerData.length-live-die;
+  let h='<div class="fade-in"><div class="results-header"><div class="results-header-left"><h2 class="results-title">Results</h2>';
+  if(live)h+='<span class="badge badge-green">'+live+' Live</span>';
+  if(die)h+='<span class="badge badge-red">'+die+' Dead</span>';
+  if(unk)h+='<span class="badge badge-yellow">'+unk+' Unknown</span>';
+  h+='</div><div style="display:flex;gap:6px">';
+  if(live)h+='<button class="btn btn-outline btn-sm" id="cpLive" onclick="copyCheckerFiltered(\'Live\',\'cpLive\')">'+ICONS.copy+' Copy Live</button>';
+  if(die)h+='<button class="btn btn-outline btn-sm" id="cpDead" onclick="copyCheckerFiltered(\'Die\',\'cpDead\')">'+ICONS.copy+' Copy Dead</button>';
+  h+='</div></div>';
+  h+='<div class="card"><div class="card-body" style="padding:8px 12px"><div style="max-height:500px;overflow-y:auto">';
+  _checkerData.forEach((r,i) => {
+    const cls = r.status==='Live'?'live':r.status==='Die'?'die':'unknown';
+    const icon = r.status==='Live'?ICONS.live16:r.status==='Die'?ICONS.die16:ICONS.unknown16;
+    const bid='ck'+i;
+    h+='<div class="check-row '+cls+'"><div class="check-row-left">'+icon+'<div class="check-info"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><code>'+r.card+'</code><span class="badge badge-outline" style="font-size:.6rem">'+r.status+'</span></div><div class="msg">'+r.message+'</div>';
+    if(r.bank||r.type||r.country){h+='<div class="meta">';if(r.bank)h+='<span class="badge badge-outline" style="font-size:.6rem">'+r.bank+'</span>';if(r.type)h+='<span class="badge badge-outline" style="font-size:.6rem;text-transform:capitalize">'+r.type+'</span>';if(r.country)h+='<span class="badge badge-outline" style="font-size:.6rem">'+r.country+'</span>';h+='</div>';}
+    h+='</div></div><button class="btn-icon gen-copy-btn" id="'+bid+'" onclick="copyText(\''+r.card.replace(/'/g,"\\'")+'\',\''+bid+'\')">'+ICONS.copy+'</button></div>';
+  });
+  h+='</div></div></div></div>';
+  el.innerHTML=h;
+}
+
+function copyCheckerFiltered(status,btnId){const t=_checkerData.filter(r=>r.status===status).map(r=>r.card).join('\n');copyText(t,btnId);}
+function resetChecker(){document.getElementById('checkerInput').value='';document.getElementById('checkerResults').classList.add('hidden');document.getElementById('checkerResults').innerHTML='';document.getElementById('checkerEmpty').classList.remove('hidden');_checkerData=[];_checking=false;document.getElementById('checkBtn').disabled=false;document.getElementById('checkerStatus').style.display='none';}
+</script>
+</body>
+</html>
